@@ -18,7 +18,7 @@ def registration_open_required(view):
     @wraps(view)
     def func(request, *args, **kwargs):
         if not GameControl.get_instance().registration_open:
-            messages.error(request, _('Sorry, registration is currently closed.'))
+            messages.error(request, _("Sorry, registration is currently closed."))
             return redirect(settings.HOME_URL)
 
         return view(request, *args, **kwargs)
@@ -36,7 +36,7 @@ def registration_closed_required(view):
     @wraps(view)
     def func(request, *args, **kwargs):
         if GameControl.get_instance().registration_open:
-            return JsonResponse({'error': 'Not available yet'}, status=404)
+            return JsonResponse({"error": "Not available yet"}, status=404)
 
         return view(request, *args, **kwargs)
 
@@ -52,7 +52,9 @@ def before_competition_required(view):
     @wraps(view)
     def func(request, *args, **kwargs):
         if GameControl.get_instance().competition_started():
-            messages.error(request, _('Sorry, that is only possible before the competition.'))
+            messages.error(
+                request, _("Sorry, that is only possible before the competition.")
+            )
             return redirect(settings.HOME_URL)
 
         return view(request, *args, **kwargs)
@@ -77,10 +79,12 @@ def services_public_required(resp_format):
             if game_control.are_services_public():
                 return view(request, *args, **kwargs)
 
-            if resp_format == 'json':
-                return JsonResponse({'error': 'Not available yet'}, status=404)
+            if resp_format == "json":
+                return JsonResponse({"error": "Not available yet"}, status=404)
             else:
-                messages.error(request, _('Sorry, the page you requested is not available yet.'))
+                messages.error(
+                    request, _("Sorry, the page you requested is not available yet.")
+                )
                 return redirect(settings.HOME_URL)
 
         return func
