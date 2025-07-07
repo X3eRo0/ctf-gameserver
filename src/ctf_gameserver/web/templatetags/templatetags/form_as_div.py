@@ -9,7 +9,7 @@ from django.forms import (
 from django.forms.utils import ErrorList
 from django.utils.encoding import force_str
 from django.utils.html import format_html, format_html_join, conditional_escape
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.utils.safestring import mark_safe
 
 register = template.Library()  # pylint: disable=invalid-name
