@@ -43,11 +43,9 @@ upstream ctf_uwsgi {
 
 server {
     # Listen on port 80 for all addresses
-    listen 80 default_server;
-    listen [::]:80 default_server;
 
     # Optionally set your VPS IP or domain here
-    server_name _;
+    server_name x3ero0.dev;
     
     # Proxy everything else to uWSGI
     location / {
@@ -67,6 +65,11 @@ server {
     # Serve uploaded files
     location /uploads/ {
         alias /var/www/ctf-gameserver-uploads/;
+        add_header Content-Security-Policy "default-src 'none'";
+    }
+
+    location = /robots.txt {
+        alias /usr/lib/python3/dist-packages/ctf_gameserver/web/static/robots.txt;
     }
 }
 EOF
