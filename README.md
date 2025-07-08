@@ -1,6 +1,7 @@
 CTF Gameserver
 ==============
 
+
 This is a Gameserver for [attack-defense (IT security) CTFs](https://ctftime.org/ctf-wtf/). It is used for
 hosting [FAUST CTF](https://www.faustctf.net), but designed to be re-usable for other competitions. It is
 scalable to large online CTFs, battle-tested in many editions of FAUST CTF, and customizable for other
