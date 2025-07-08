@@ -6,4 +6,91 @@ apt update
 apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 nginx uwsgi uwsgi-plugin-python3 postfix
 mk-build-deps --install debian/control
 dpkg-buildpackage --unsigned-changes --unsigned-buildinfo
+
+cat <<'EOF' >/etc/uwsgi/apps-available/ctf-gameserver.ini
+[uwsgi]
+# load the Python 3 plugin so uWSGI can run your WSGI app
+plugin = python3
+
+
+chdir           = /usr/lib/python3/dist-packages/
+module          = ctf_gameserver.web.wsgi:application
+
+# Use the prod settings file
+env             = DJANGO_SETTINGS_MODULE=prod_settings
+pythonpath      = /etc/ctf-gameserver/web
+
+master          = true
+processes       = 4
+socket          = /run/uwsgi/ctf-gameserver.sock
+chmod-socket    = 660
+vacuum          = true
+
+uid             = www-data
+gid             = www-data
+EOF
+
+ln -s /etc/uwsgi/apps-available/ctf-gameserver.ini /etc/uwsgi/apps-enabled/
+systemctl enable --now uwsgi
+
+cat <<'EOF' >/etc/nginx/sites-available/ctf-gameserver
+upstream ctf_uwsgi {
+    server unix:/run/uwsgi/ctf-gameserver.sock;
+}
+
+server {
+    # Listen on port 80 for all addresses
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # Optionally set your VPS IP or domain here
+    server_name _;
+    
+    # Proxy everything else to uWSGI
+    location / {
+        include uwsgi_params;
+        uwsgi_pass ctf_uwsgi;
+    }
+
+    location /static/admin/ {
+        alias /usr/lib/python3/dist-packages/django/contrib/admin/static/admin/;
+    }
+
+    # Serve Django static files
+    location /static/ {
+        alias /usr/lib/python3/dist-packages/ctf_gameserver/web/static/;
+    }
+
+    # Serve uploaded files
+    location /uploads/ {
+        alias /var/www/ctf-gameserver-uploads/;
+    }
+}
+EOF
+
+rm /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/ctf-gameserver /etc/nginx/sites-enabled/
+nginx -t && sudo systemctl reload nginx
+
+read -p "Enter IP: " new_ip
+
+python3 <<EOF
+import sys
+
+file_path = "/etc/ctf-gameserver/web/prod_settings.py"
+new_ip    = "$new_ip"
+
+# Read all lines
+with open(file_path, 'r') as f:
+    lines = f.readlines()
+
+# Replace line 84 (index 83)
+lines[83] = f'ALLOWED_HOSTS = ["*", "localhost", "{new_ip}"]\n'
+
+# Write back
+with open(file_path, 'w') as f:
+    f.writelines(lines)
+EOF
+
+systemctl restart uwsgi
 cd /root/ && python3 -m http.server 8000 --bind 0.0.0.0
