@@ -96,4 +96,4 @@ with open(file_path, 'w') as f:
 EOF
 
 systemctl restart uwsgi
-cd /root/ && python3 -m http.server 8000 --bind 0.0.0.0
+echo "[+] setup done, visit: http://$new_ip/"
