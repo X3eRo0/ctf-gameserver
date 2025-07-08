@@ -7,6 +7,9 @@ apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 ngi
 mk-build-deps --install debian/control
 dpkg-buildpackage --unsigned-changes --unsigned-buildinfo
 
+echo "[+] Start ansible script now and hit CTRL-C when its done."
+cd /root/ && python3 -m http.server 8000 --bind 0.0.0.0
+
 cat <<'EOF' >/etc/uwsgi/apps-available/ctf-gameserver.ini
 [uwsgi]
 # load the Python 3 plugin so uWSGI can run your WSGI app
