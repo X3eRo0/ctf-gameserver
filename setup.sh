@@ -2,7 +2,6 @@
 
 set -xe
 
-git clone https://github.com/X3eRo0/ctf-gameserver.git
 cd ctf-gameserver
 apt update
 apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 nginx uwsgi uwsgi-plugin-python3 postfix
