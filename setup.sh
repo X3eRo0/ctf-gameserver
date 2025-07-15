@@ -3,7 +3,7 @@
 set -xe
 
 apt update
-apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 nginx uwsgi uwsgi-plugin-python3 postfix
+apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 nginx uwsgi uwsgi-plugin-python3 postfix wireguard-tools certbot python3-certbot-nginx
 mk-build-deps --install debian/control
 dpkg-buildpackage --unsigned-changes --unsigned-buildinfo
 
@@ -87,8 +87,14 @@ file_path = "/etc/ctf-gameserver/web/prod_settings.py"
 with open(file_path, 'r') as f:
     lines = f.readlines()
 
+password = input("Mailgun password: ")
+
 # Replace line 84 (index 83)
 lines[83] = f'ALLOWED_HOSTS = ["*", "localhost", "x3ero0.dev"]\n'
+lines[54] = f"EMAIL_HOST = 'smtp.mailgun.org'\n"
+lines[55] = f"EMAIL_PORT = 2525\n"
+lines[56] = f"EMAIL_HOST_USER = 'admin@ctf.x3ero0.dev'\n"
+lines[57] = f"EMAIL_HOST_PASSWORD = '{password}'\n"
 
 # Write back
 with open(file_path, 'w') as f:
@@ -96,8 +102,6 @@ with open(file_path, 'w') as f:
 EOF
 
 systemctl restart uwsgi
-
-apt install -y certbot python3-certbot-nginx
 certbot --nginx -d x3ero0.dev
 
 echo "[+] setup done, visit: http://x3ero0.dev/"
