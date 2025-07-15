@@ -102,6 +102,6 @@ with open(file_path, 'w') as f:
 EOF
 
 systemctl restart uwsgi
-echo 'psinghania929@gmail.com\nY\nN\n' | certbot --nginx -d x3ero0.dev
+echo -ne 'psinghania929@gmail.com\nY\nN\n' | certbot --nginx -d x3ero0.dev
 
 echo "[+] setup done, visit: http://x3ero0.dev/"
