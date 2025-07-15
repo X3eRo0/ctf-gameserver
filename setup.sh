@@ -89,8 +89,6 @@ file_path = "/etc/ctf-gameserver/web/prod_settings.py"
 with open(file_path, 'r') as f:
     lines = f.readlines()
 
-password = input("Mailgun password: ")
-
 # Replace line 84 (index 83)
 lines[83] = f'ALLOWED_HOSTS = ["*", "localhost", "x3ero0.dev"]\n'
 lines[54] = f"EMAIL_HOST = 'smtp.mailgun.org'\n"
