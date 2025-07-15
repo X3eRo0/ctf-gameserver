@@ -99,4 +99,8 @@ with open(file_path, 'w') as f:
 EOF
 
 systemctl restart uwsgi
+
+apt install -y certbot python3-certbot-nginx
+certbot --nginx -d x3ero0.dev
+
 echo "[+] setup done, visit: http://$new_ip/"
