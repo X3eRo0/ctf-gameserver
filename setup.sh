@@ -78,20 +78,17 @@ rm /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/ctf-gameserver /etc/nginx/sites-enabled/
 nginx -t && sudo systemctl reload nginx
 
-read -p "Enter IP: " new_ip
-
 python3 <<EOF
 import sys
 
 file_path = "/etc/ctf-gameserver/web/prod_settings.py"
-new_ip    = "$new_ip"
 
 # Read all lines
 with open(file_path, 'r') as f:
     lines = f.readlines()
 
 # Replace line 84 (index 83)
-lines[83] = f'ALLOWED_HOSTS = ["*", "localhost", "{new_ip}"]\n'
+lines[83] = f'ALLOWED_HOSTS = ["*", "localhost", "x3ero0.dev"]\n'
 
 # Write back
 with open(file_path, 'w') as f:
@@ -103,4 +100,4 @@ systemctl restart uwsgi
 apt install -y certbot python3-certbot-nginx
 certbot --nginx -d x3ero0.dev
 
-echo "[+] setup done, visit: http://$new_ip/"
+echo "[+] setup done, visit: http://x3ero0.dev/"
