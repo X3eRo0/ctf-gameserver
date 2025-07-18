@@ -78,30 +78,7 @@ rm /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/ctf-gameserver /etc/nginx/sites-enabled/
 nginx -t && sudo systemctl reload nginx
 
-read -p "Enter mailgun password: " password
-
-python3 <<EOF
-import sys
-
-file_path = "/etc/ctf-gameserver/web/prod_settings.py"
-
-# Read all lines
-with open(file_path, 'r') as f:
-    lines = f.readlines()
-
-# Replace line 84 (index 83)
-lines[83] = f'ALLOWED_HOSTS = ["*", "localhost", "x3ero0.dev"]\n'
-lines[54] = f"EMAIL_HOST = 'smtp.mailgun.org'\n"
-lines[55] = f"EMAIL_PORT = 2525\n"
-lines[56] = f"EMAIL_HOST_USER = 'admin@ctf.x3ero0.dev'\n"
-lines[57] = f"EMAIL_HOST_PASSWORD = '$password'\n"
-
-# Write back
-with open(file_path, 'w') as f:
-    f.writelines(lines)
-EOF
-
 systemctl restart uwsgi
-echo -ne 'psinghania929@gmail.com\nY\nN\n' | certbot --nginx -d x3ero0.dev
 
+certbot --nginx -d x3ero0.dev --non-interactive --agree-tos --email you@yourdomain.com --no-eff-email
 echo "[+] setup done, visit: http://x3ero0.dev/"
