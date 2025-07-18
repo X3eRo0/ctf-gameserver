@@ -15,7 +15,7 @@
 set -euo pipefail
 
 ### CONFIGURABLES (override via env if you like) ###
-TEAM_DOWNLOADS_ROOT="${TEAM_DOWNLOADS_ROOT:-/var/lib/ctf-gameserver/team-downloads}"
+TEAM_DOWNLOADS_ROOT="${TEAM_DOWNLOADS_ROOT:-/var/www/team-downloads}"
 WG_DIR="${WG_DIR:-/etc/wireguard}"
 WG_CONF="${WG_CONF:-/etc/wireguard/wg0.conf}"
 SERVER_IP="${SERVER_IP:-x3ero0.dev}"

@@ -10,6 +10,10 @@ dpkg-buildpackage --unsigned-changes --unsigned-buildinfo
 echo "[+] Start ansible script now and hit CTRL-C when its done."
 python3 -m http.server 8000 -d /root/ --bind 0.0.0.0
 
+# create team_uploads directory
+mkdir -p /var/www/team-downloads
+chown -R www-data:www-data /var/www/team-downloads
+
 cat <<'EOF' >/etc/uwsgi/apps-available/ctf-gameserver.ini
 [uwsgi]
 # load the Python 3 plugin so uWSGI can run your WSGI app
