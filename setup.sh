@@ -8,7 +8,7 @@ mk-build-deps --install debian/control
 dpkg-buildpackage --unsigned-changes --unsigned-buildinfo
 
 echo "[+] Start ansible script now and hit CTRL-C when its done."
-cd /root/ && python3 -m http.server 8000 --bind 0.0.0.0
+python3 -m http.server 8000 -d /root/ --bind 0.0.0.0
 
 cat <<'EOF' >/etc/uwsgi/apps-available/ctf-gameserver.ini
 [uwsgi]
