@@ -12,7 +12,6 @@
 #   -h             Show help
 #
 # Place this at /usr/local/bin/vpnconfig.sh and chmod +x it.
-
 set -euo pipefail
 
 ### CONFIGURABLES (override via env if you like) ###
@@ -23,12 +22,48 @@ SERVER_IP="${SERVER_IP:-x3ero0.dev}"
 LISTEN_PORT="${LISTEN_PORT:-51820}"
 NET_PREFIX="${NET_PREFIX:-10.32}"
 DNS_IP="${DNS_IP:-10.32.0.1}"
-SERVER_PRIVKEY_PATH="${SERVER_PRIVKEY_PATH:-$WG_DIR/server.priv}" # location of server’s priv key
+SERVER_PRIVKEY_PATH="${SERVER_PRIVKEY_PATH:-$WG_DIR/server.priv}" # location of server's priv key
+SERVER_PUBKEY_PATH="${SERVER_PUBKEY_PATH:-$WG_DIR/server.pub}"    # location of server's pub key
 #####################################################
 
 usage() {
     grep '^#' "$0" | sed 's/^#//'
     exit 1
+}
+
+# Create initial wg0.conf with [Interface] section
+create_initial_wg_conf() {
+    echo "[!] Creating initial wg0.conf at $WG_CONF"
+
+    # Create WireGuard directory if it doesn't exist
+    mkdir -p "$WG_DIR"
+
+    # Generate server keys if they don't exist
+    if [[ ! -f "$SERVER_PRIVKEY_PATH" ]]; then
+        echo "[!] Generating server private key at $SERVER_PRIVKEY_PATH"
+        umask 077
+        wg genkey >"$SERVER_PRIVKEY_PATH"
+        chmod 600 "$SERVER_PRIVKEY_PATH"
+    fi
+
+    if [[ ! -f "$SERVER_PUBKEY_PATH" ]]; then
+        echo "[!] Generating server public key at $SERVER_PUBKEY_PATH"
+        wg pubkey <"$SERVER_PRIVKEY_PATH" >"$SERVER_PUBKEY_PATH"
+        chmod 644 "$SERVER_PUBKEY_PATH"
+    fi
+
+    # Create initial wg0.conf with [Interface] section
+    cat >"$WG_CONF" <<EOF
+[Interface]
+PrivateKey = $(<"$SERVER_PRIVKEY_PATH")
+Address    = ${DNS_IP}/24
+ListenPort = ${LISTEN_PORT}
+SaveConfig = false
+
+EOF
+
+    chmod 600 "$WG_CONF"
+    echo "[✔] Created $WG_CONF with initial [Interface] section"
 }
 
 # Rebuild wg0.conf from scratch, preserving only your Interface block
@@ -48,12 +83,12 @@ append_peer() {
     local team=$1
     local pubkey=$2
     cat >>"$WG_CONF" <<EOF
-
 # BEGIN team $team
 [Peer]
 PublicKey     = $pubkey
 AllowedIPs    = ${NET_PREFIX}.${team}.2/32
 # END team $team
+
 EOF
 }
 
@@ -63,11 +98,9 @@ gen_for_team() {
     local tdir="$TEAM_DOWNLOADS_ROOT/$team"
     mkdir -p "$tdir"
     chmod 750 "$tdir"
-
     pushd "$tdir" >/dev/null
     umask 077
     wg genkey | tee private.key | wg pubkey >public.key
-
     cat >vpn.conf <<EOF
 [Interface]
 PrivateKey = $(<private.key)
@@ -75,13 +108,12 @@ Address    = ${NET_PREFIX}.${team}.2/24
 DNS        = ${DNS_IP}
 
 [Peer]
-PublicKey           = $(<"${WG_DIR}/server.pub")
+PublicKey           = $(<"${SERVER_PUBKEY_PATH}")
 Endpoint            = ${SERVER_IP}:${LISTEN_PORT}
 AllowedIPs          = ${NET_PREFIX}.0.0/16
 PersistentKeepalive = 25
 EOF
     popd >/dev/null
-
     append_peer "$team" "$(<"$tdir/public.key")"
     echo "[+] Team $team: generated $tdir/vpn.conf"
 }
@@ -123,9 +155,10 @@ fi
 #################
 # Prepare wg0.conf #
 #################
+
+# Create wg0.conf if it doesn't exist
 if [[ ! -f "$WG_CONF" ]]; then
-    echo "Error: wg0.conf not found at $WG_CONF" >&2
-    exit 2
+    create_initial_wg_conf
 fi
 
 if ((RESET)); then
