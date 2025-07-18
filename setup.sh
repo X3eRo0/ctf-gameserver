@@ -80,5 +80,7 @@ nginx -t && sudo systemctl reload nginx
 
 systemctl restart uwsgi
 
+cp ./academy-logo.png /var/www/gameserver_uploads/
+
 certbot --nginx -d x3ero0.dev --non-interactive --agree-tos --email you@yourdomain.com --no-eff-email
 echo "[+] setup done, visit: http://x3ero0.dev/"
