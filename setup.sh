@@ -12,7 +12,6 @@ python3 -m http.server 8000 -d /root/ --bind 0.0.0.0
 
 # create team_uploads directory
 mkdir -p /var/www/team-downloads
-chown -R www-data:www-data /var/www/team-downloads
 
 cat <<'EOF' >/etc/uwsgi/apps-available/ctf-gameserver.ini
 [uwsgi]
