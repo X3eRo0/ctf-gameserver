@@ -59,6 +59,8 @@ PrivateKey = $(<"$SERVER_PRIVKEY_PATH")
 Address    = ${DNS_IP}/24
 ListenPort = ${LISTEN_PORT}
 SaveConfig = false
+PostUp   = iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE
+PostDown = iptables -t nat -D POSTROUTING -o wg0 -j MASQUERADE
 
 EOF
 
