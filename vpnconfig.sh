@@ -188,4 +188,5 @@ for team in "${TEAMS[@]}"; do
     gen_for_team "$team"
 done
 
+chown -R www-data:www-data /var/www/team-downloads
 echo "[✔] Done."
