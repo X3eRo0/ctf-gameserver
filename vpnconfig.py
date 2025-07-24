@@ -469,6 +469,8 @@ def main():
     elif args.up:
         bring_all_down(args)
 
+    run(["chown", "-R", "www-data:www-data", "/var/www/team-downloads/"])
+
 
 if __name__ == "__main__":
     main()
