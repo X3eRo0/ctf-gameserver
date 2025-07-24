@@ -232,7 +232,7 @@ async def loop_step(db_conn, metrics, wireguard_if_pattern=None, gateway_ip_patt
 
 async def check_wireguard(if_pattern, teams):
 
-    teams_map = {if_pattern % team[1]: team[0] for team in teams}
+    teams_map = {if_pattern % team[1] : team[0] for team in teams}
     results = {}
 
     cmd = ['sudo', '--non-interactive', '--', '/usr/bin/wg', 'show', 'all', 'latest-handshakes']
