@@ -406,18 +406,21 @@ Examples:
     # choices=["all", "single", "reset", "down"],
     p.add_argument(
         "--all",
+        action="store_true",
         help="Generate vpn config for all registered teams.",
     )
     p.add_argument(
         "--single",
+        action="store_true",
         help="Generate vpn config for a single teams.",
     )
     p.add_argument(
         "--reset",
+        action="store_true",
         help="Reset vpn config",
     )
-    p.add_argument("--down", help="Bring down all team vpns.")
-    p.add_argument("--up", help="Bring up all team vpns.")
+    p.add_argument("--down", action="store_true", help="Bring down all team vpns.")
+    p.add_argument("--up", action="store_true", help="Bring up all team vpns.")
     p.add_argument(
         "--net-number", type=int, help="Team net number (required for single mode)"
     )
@@ -426,7 +429,7 @@ Examples:
     )
     p.add_argument(
         "--downloads-root",
-        default="/var/lib/ctf-gameserver/team-downloads",
+        default="/var/www/team-downloads",
         help="Root where /<net>/vpn.conf is stored",
     )
     p.add_argument(
