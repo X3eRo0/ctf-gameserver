@@ -20,7 +20,7 @@ DB_CONFIG = {
 
 # Default values for game configuration
 DEFAULT_CONFIG = {
-    "competition_name": "My A/D CTF",
+    "competition_name": "Academy CTF",
     "services_public": None,  # Will be set to None (NULL in database)
     "start": None,  # Will be set to None (NULL in database)
     "end": None,  # Will be set to None (NULL in database)
@@ -33,6 +33,13 @@ DEFAULT_CONFIG = {
     "registration_confirm_text": "",
     "min_net_number": 1,
     "max_net_number": None,  # Will be set to None (NULL in database)
+}
+
+# Admin user configuration
+ADMIN_CONFIG = {
+    "username": "admin",
+    "email": "ctf@x3ero0.dev",
+    "password": None,  # Will be prompted during full reset
 }
 
 
@@ -86,15 +93,7 @@ def basic_reset(conn):
 
         # Reset current tick and clear start/end times to stop checker confusion
         print("- Resetting current tick and clearing game times...")
-        cursor.execute(
-            """
-            UPDATE scoring_gamecontrol SET 
-                current_tick = 0,
-                start = NULL,
-                "end" = NULL,
-                services_public = NULL
-        """
-        )
+        cursor.execute("UPDATE scoring_gamecontrol SET current_tick = 0")
 
         print("✓ Basic reset completed successfully!")
         print("✓ Teams, users, sessions, and services preserved")
@@ -139,16 +138,44 @@ def full_reset(conn):
         print("- Removing all services...")
         cursor.execute("DELETE FROM scoring_service;")
 
-        # Remove all teams except admin (preserve superuser)
-        print("- Removing all teams (keeping admin)...")
-        cursor.execute(
-            "DELETE FROM auth_user_groups WHERE user_id NOT IN (SELECT id FROM auth_user WHERE is_superuser = true);"
-        )
-        cursor.execute(
-            "DELETE FROM auth_user_user_permissions WHERE user_id NOT IN (SELECT id FROM auth_user WHERE is_superuser = true);"
-        )
+        # Remove all teams and users (including admin - will recreate)
+        print("- Removing all teams and users...")
+        cursor.execute("DELETE FROM auth_user_groups;")
+        cursor.execute("DELETE FROM auth_user_user_permissions;")
         cursor.execute("DELETE FROM registration_team;")
-        cursor.execute("DELETE FROM auth_user WHERE is_superuser = false;")
+        cursor.execute("DELETE FROM auth_user;")
+
+        # Recreate admin user
+        print("- Recreating admin user...")
+
+        # Prompt for admin password if not provided
+        admin_password = ADMIN_CONFIG["password"]
+        if admin_password is None:
+            admin_password = getpass.getpass(
+                f"Set password for admin user '{ADMIN_CONFIG['username']}': "
+            )
+
+        # Create proper Django password hash
+        import hashlib
+        import base64
+        import secrets
+
+        # Generate salt and hash password (Django PBKDF2 format)
+        salt = base64.b64encode(secrets.token_bytes(16)).decode("ascii")[:22]
+        password_hash = hashlib.pbkdf2_hmac(
+            "sha256", admin_password.encode(), salt.encode(), 600000
+        )
+        password_b64 = base64.b64encode(password_hash).decode("ascii")[:43]
+        django_hash = f"pbkdf2_sha256$600000${salt}${password_b64}="
+
+        # Insert admin user with correct password hash directly
+        cursor.execute(
+            """
+            INSERT INTO auth_user (username, first_name, last_name, email, is_staff, is_active, is_superuser, date_joined, password)
+            VALUES (%s, '', '', %s, true, true, true, NOW(), %s)
+        """,
+            (ADMIN_CONFIG["username"], ADMIN_CONFIG["email"], django_hash),
+        )
 
         # Reset game control to default values
         print("- Resetting game control to defaults...")
@@ -281,8 +308,14 @@ def update_defaults(key, value):
         else:
             DEFAULT_CONFIG[key] = value if value != "None" else None
         return True
+    elif key in ADMIN_CONFIG:
+        ADMIN_CONFIG[key] = value
+        return True
     else:
         print(f"Error: Unknown configuration key '{key}'")
+        print(
+            f"Available keys: {', '.join(list(DEFAULT_CONFIG.keys()) + list(ADMIN_CONFIG.keys()))}"
+        )
         return False
 
 
@@ -301,15 +334,8 @@ def main():
     parser.add_argument(
         "--show-config", action="store_true", help="Show current default configuration"
     )
-    parser.add_argument(
-        "--password", help="Database password (will prompt if not provided)"
-    )
 
     args = parser.parse_args()
-
-    # Set password if provided via command line
-    if args.password:
-        DB_CONFIG["password"] = args.password
 
     # Update default configuration if requested
     if args.set:
@@ -323,6 +349,13 @@ def main():
         print("-" * 30)
         for key, value in DEFAULT_CONFIG.items():
             print(f"{key}: {value}")
+        print("\nAdmin Configuration:")
+        print("-" * 20)
+        for key, value in ADMIN_CONFIG.items():
+            if key == "password":
+                print(f"{key}: {'*' * len(value)}")  # Hide password
+            else:
+                print(f"{key}: {value}")
         print()
 
     # Confirm reset
