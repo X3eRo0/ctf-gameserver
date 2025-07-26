@@ -87,8 +87,16 @@ cp ./academy-logo.png /var/www/gameserver_uploads/
 
 certbot --nginx -d x3ero0.dev --non-interactive --agree-tos --email you@yourdomain.com --no-eff-email
 
+chmod +w /var/crash
+
 # To allow packets to route from one team to another
 echo "net.ipv4.ip_forward = 1" | tee /etc/sysctl.d/99-ipforward.conf
 sysctl --system
+
+mkdir -p /opt/checker
+
+# create checker env
+python3 -m venv /opt/env/
+ln -s /usr/lib/python3/dist-packages/ctf_gameserver /opt/env/lib/python3.12/site-packages/ctf_gameserver
 
 echo "[+] setup done, visit: http://x3ero0.dev/"
