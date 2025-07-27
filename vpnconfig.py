@@ -209,7 +209,7 @@ AllowedIPs     = {peer_ip32}
         f"""[Interface]
 PrivateKey       = {c_priv.strip()}
 Address          = {PREFIX}.{net}.2/24
-DNS              = {dns_ip}
+# DNS              = {dns_ip}
 
 [Peer]
 PublicKey        = {server_pub}
