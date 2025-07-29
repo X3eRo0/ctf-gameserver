@@ -67,7 +67,7 @@ server {
 
     # Serve uploaded files
     location /uploads/ {
-        alias /var/www/ctf-gameserver-uploads/;
+        alias /var/www/gameserver_uploads/;
         add_header Content-Security-Policy "default-src 'none'";
     }
 
