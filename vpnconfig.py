@@ -203,13 +203,17 @@ AllowedIPs     = {peer_ip32}
     )
 
     # Write client vpn.conf
-    vpn_conf = team_dir / "vpn.conf"
+    vpn_conf = team_dir / "wg-ctf.conf"
     logging.info("Writing %s", vpn_conf)
     vpn_conf.write_text(
         f"""[Interface]
 PrivateKey       = {c_priv.strip()}
 Address          = {PREFIX}.{net}.2/24
 # DNS              = {dns_ip}
+
+# Add host entry for submission server
+PostUp           = echo "{PREFIX}.{net}.1 submission.x3ero0.dev" >> /etc/hosts
+PostDown         = sed -i '/submission.x3ero0.dev/d' /etc/hosts
 
 [Peer]
 PublicKey        = {server_pub}
