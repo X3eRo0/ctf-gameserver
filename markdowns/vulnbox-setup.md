@@ -37,9 +37,9 @@ Graphic of network setup and IP ranges
 Academy CTF will use only IPv4 within the competition network (Faust ctf uses ipv6 💀):
 
     Vulnbox VPN network
-        10.32.1.1%wg-ctf: Competition gateway
-        10.32.1.2%wg-ctf: Team vulnbox
-        10.32.1.x%wg-plr: Player
+        10.32.<team-number>.1%wg-ctf: Competition gateway
+        10.32.<team-number>.2%wg-ctf: Team vulnbox
+        10.33.<team-number>.x%tun0: Player
     Team networks: 10.32.<team-number>.0/24
         Vulnbox network (VPN): 10.32.<team-number>.0/24
             Gateway (separate router machine): 10.32.<team-number>.1
