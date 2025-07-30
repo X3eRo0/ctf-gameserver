@@ -6,6 +6,7 @@ Provides full and basic reset functionality for CTF competitions
 
 import psycopg2
 import sys
+import os
 from datetime import datetime, timezone
 import argparse
 import getpass
@@ -51,6 +52,43 @@ DEFAULT_TEAMDOWNLOADS = [
     {
         "filename": "player.ovpn",
         "description": "Openvpn configuration for players to use.",
+    },
+]
+
+# Default flatpage categories
+DEFAULT_FLATPAGE_CATEGORIES = [
+    {"title": "Information", "slug": "information", "ordering": 1}
+]
+
+# Default flatpages (markdown files to load from disk)
+DEFAULT_FLATPAGES = [
+    {
+        "file_path": "./markdowns/attack-defense-for-beginners.md",
+        "title": "Attack Defense for Beginners",
+        "slug": "attack-defense-for-beginners",
+        "category": "Information",
+        "ordering": 1,
+    },
+    {
+        "file_path": "./markdowns/submission.md",
+        "title": "Submission",
+        "slug": "submission",
+        "category": "Information",
+        "ordering": 2,
+    },
+    {
+        "file_path": "./markdowns/vulnbox-setup.md",
+        "title": "Vulnbox Setup",
+        "slug": "vulnbox-setup",
+        "category": "Information",
+        "ordering": 3,
+    },
+    {
+        "file_path": "./markdowns/index.md",
+        "title": "Index",
+        "slug": "index",
+        "category": "",  # No category (NULL)
+        "ordering": 0,
     },
 ]
 
@@ -143,6 +181,8 @@ def full_reset(conn):
         cursor.execute("DELETE FROM scoring_flag;")
         cursor.execute("DELETE FROM vpnstatus_vpnstatuscheck;")
         cursor.execute("DELETE FROM registration_teamdownload;")
+        cursor.execute("DELETE FROM flatpages_flatpage;")
+        cursor.execute("DELETE FROM flatpages_category;")
         cursor.execute("DELETE FROM django_admin_log;")
         cursor.execute("DELETE FROM django_session;")
 
@@ -239,6 +279,59 @@ def full_reset(conn):
             )
             print(f"  - Added: {download['filename']}")
 
+        # Recreate default flatpage categories
+        print("- Creating default flatpage categories...")
+        category_ids = {}  # Store category_id mapping for flatpages
+
+        for category in DEFAULT_FLATPAGE_CATEGORIES:
+            cursor.execute(
+                """
+                INSERT INTO flatpages_category (title, slug, ordering)
+                VALUES (%s, %s, %s) RETURNING id
+                """,
+                (category["title"], category["slug"], category["ordering"]),
+            )
+            category_id = cursor.fetchone()[0]
+            category_ids[category["title"]] = category_id
+            print(f"  - Added category: {category['title']} (ID: {category_id})")
+
+        # Recreate default flatpages from markdown files
+        print("- Creating default flatpages from markdown files...")
+        for flatpage in DEFAULT_FLATPAGES:
+            try:
+                # Read markdown file content
+                if os.path.exists(flatpage["file_path"]):
+                    with open(flatpage["file_path"], "r", encoding="utf-8") as f:
+                        content = f.read()
+
+                    # Get category_id (None for empty category)
+                    category_id = None
+                    if flatpage["category"] and flatpage["category"] in category_ids:
+                        category_id = category_ids[flatpage["category"]]
+
+                    # Insert flatpage
+                    cursor.execute(
+                        """
+                        INSERT INTO flatpages_flatpage (title, content, ordering, slug, category_id)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        (
+                            flatpage["title"],
+                            content,
+                            flatpage["ordering"],
+                            flatpage["slug"],
+                            category_id,
+                        ),
+                    )
+                    print(
+                        f"  - Added flatpage: {flatpage['title']} ({flatpage['file_path']})"
+                    )
+                else:
+                    print(f"  - WARNING: File not found: {flatpage['file_path']}")
+
+            except Exception as e:
+                print(f"  - ERROR loading {flatpage['file_path']}: {e}")
+
         print("✓ Full reset completed successfully!")
 
         # Show current state
@@ -290,6 +383,12 @@ def show_current_state(cursor):
     cursor.execute("SELECT COUNT(*) FROM registration_teamdownload;")
     download_count = cursor.fetchone()[0]
 
+    cursor.execute("SELECT COUNT(*) FROM flatpages_category;")
+    category_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM flatpages_flatpage;")
+    flatpage_count = cursor.fetchone()[0]
+
     print(f"\nDatabase Counts:")
     print(f"- Teams: {team_count}")
     print(f"- Services: {service_count}")
@@ -298,6 +397,8 @@ def show_current_state(cursor):
     print(f"- Regular Users: {user_count}")
     print(f"- Admin Users: {admin_count}")
     print(f"- Team Downloads: {download_count}")
+    print(f"- Flatpage Categories: {category_count}")
+    print(f"- Flatpages: {flatpage_count}")
 
     # Show services if any
     if service_count > 0:
@@ -321,6 +422,32 @@ def show_current_state(cursor):
         print(f"\nTeam Downloads:")
         for download in downloads:
             print(f"- {download[0]}: {download[1]}")
+
+    # Show flatpage categories
+    if category_count > 0:
+        cursor.execute(
+            "SELECT id, title, slug FROM flatpages_category ORDER BY ordering;"
+        )
+        categories = cursor.fetchall()
+        print(f"\nFlatpage Categories:")
+        for category in categories:
+            print(f"- {category[1]} ({category[2]}) [ID: {category[0]}]")
+
+    # Show flatpages
+    if flatpage_count > 0:
+        cursor.execute(
+            """
+            SELECT f.title, f.slug, c.title as category_title 
+            FROM flatpages_flatpage f 
+            LEFT JOIN flatpages_category c ON f.category_id = c.id 
+            ORDER BY f.ordering
+        """
+        )
+        flatpages = cursor.fetchall()
+        print(f"\nFlatpages:")
+        for flatpage in flatpages:
+            category = flatpage[2] if flatpage[2] else "No category"
+            print(f"- {flatpage[0]} ({flatpage[1]}) [{category}]")
 
 
 def update_defaults(key, value):
@@ -398,6 +525,21 @@ def main():
         print("-" * 25)
         for download in DEFAULT_TEAMDOWNLOADS:
             print(f"{download['filename']}: {download['description']}")
+
+        print("\nDefault Flatpage Categories:")
+        print("-" * 30)
+        for category in DEFAULT_FLATPAGE_CATEGORIES:
+            print(
+                f"{category['title']} ({category['slug']}) - Order: {category['ordering']}"
+            )
+
+        print("\nDefault Flatpages:")
+        print("-" * 20)
+        for flatpage in DEFAULT_FLATPAGES:
+            category = flatpage["category"] if flatpage["category"] else "No category"
+            print(
+                f"{flatpage['title']} ({flatpage['slug']}) - {flatpage['file_path']} [{category}]"
+            )
         print()
 
     # Confirm reset
