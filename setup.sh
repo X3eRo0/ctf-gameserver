@@ -3,7 +3,7 @@
 set -xe
 
 apt update
-apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 nginx uwsgi uwsgi-plugin-python3 postfix wireguard-tools certbot python3-certbot-nginx iptables iproute2 python3-pip python3-venv
+apt install -y devscripts dpkg-dev equivs neovim postgresql python3-psycopg2 nginx uwsgi uwsgi-plugin-python3 postfix wireguard-tools certbot python3-certbot-nginx iptables iproute2 python3-pip python3-venv openvpn easy-rsa
 mk-build-deps --install debian/control
 dpkg-buildpackage --unsigned-changes --unsigned-buildinfo
 
