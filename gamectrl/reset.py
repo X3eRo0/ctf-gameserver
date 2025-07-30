@@ -63,28 +63,28 @@ DEFAULT_FLATPAGE_CATEGORIES = [
 # Default flatpages (markdown files to load from disk)
 DEFAULT_FLATPAGES = [
     {
-        "file_path": "./markdowns/attack-defense-for-beginners.md",
+        "file_path": "../markdowns/attack-defense-for-beginners.md",
         "title": "Attack Defense for Beginners",
         "slug": "attack-defense-for-beginners",
         "category": "Information",
         "ordering": 1,
     },
     {
-        "file_path": "./markdowns/submission.md",
+        "file_path": "../markdowns/submission.md",
         "title": "Submission",
         "slug": "submission",
         "category": "Information",
         "ordering": 2,
     },
     {
-        "file_path": "./markdowns/vulnbox-setup.md",
+        "file_path": "../markdowns/vulnbox-setup.md",
         "title": "Vulnbox Setup",
         "slug": "vulnbox-setup",
         "category": "Information",
         "ordering": 3,
     },
     {
-        "file_path": "./markdowns/index.md",
+        "file_path": "../markdowns/index.md",
         "title": "Index",
         "slug": "index",
         "category": "",  # No category (NULL)
