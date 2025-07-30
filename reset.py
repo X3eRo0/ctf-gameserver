@@ -42,6 +42,18 @@ ADMIN_CONFIG = {
     "password": None,  # Will be prompted during full reset
 }
 
+# Default team download entries
+DEFAULT_TEAMDOWNLOADS = [
+    {
+        "filename": "wg-ctf.conf",
+        "description": "Wireguard vpn configuration for the vulnbox.",
+    },
+    {
+        "filename": "player.ovpn",
+        "description": "Openvpn configuration for players to use.",
+    },
+]
+
 
 def connect_to_database():
     """Connect to the CTF database"""
@@ -215,6 +227,18 @@ def full_reset(conn):
             ),
         )
 
+        # Recreate default team download entries
+        print("- Creating default team download entries...")
+        for download in DEFAULT_TEAMDOWNLOADS:
+            cursor.execute(
+                """
+                INSERT INTO registration_teamdownload (filename, description)
+                VALUES (%s, %s)
+                """,
+                (download["filename"], download["description"]),
+            )
+            print(f"  - Added: {download['filename']}")
+
         print("✓ Full reset completed successfully!")
 
         # Show current state
@@ -263,6 +287,9 @@ def show_current_state(cursor):
     cursor.execute("SELECT COUNT(*) FROM auth_user WHERE is_superuser = true;")
     admin_count = cursor.fetchone()[0]
 
+    cursor.execute("SELECT COUNT(*) FROM registration_teamdownload;")
+    download_count = cursor.fetchone()[0]
+
     print(f"\nDatabase Counts:")
     print(f"- Teams: {team_count}")
     print(f"- Services: {service_count}")
@@ -270,6 +297,7 @@ def show_current_state(cursor):
     print(f"- Captures: {capture_count}")
     print(f"- Regular Users: {user_count}")
     print(f"- Admin Users: {admin_count}")
+    print(f"- Team Downloads: {download_count}")
 
     # Show services if any
     if service_count > 0:
@@ -285,6 +313,14 @@ def show_current_state(cursor):
     print(f"\nAdmin Users:")
     for admin in admins:
         print(f"- {admin[0]} ({admin[1]})")
+
+    # Show team downloads
+    if download_count > 0:
+        cursor.execute("SELECT filename, description FROM registration_teamdownload;")
+        downloads = cursor.fetchall()
+        print(f"\nTeam Downloads:")
+        for download in downloads:
+            print(f"- {download[0]}: {download[1]}")
 
 
 def update_defaults(key, value):
@@ -353,9 +389,15 @@ def main():
         print("-" * 20)
         for key, value in ADMIN_CONFIG.items():
             if key == "password":
-                print(f"{key}: {'*' * len(value)}")  # Hide password
+                print(
+                    f"{key}: {'*' * len(value) if value else 'Not set'}"
+                )  # Hide password
             else:
                 print(f"{key}: {value}")
+        print("\nDefault Team Downloads:")
+        print("-" * 25)
+        for download in DEFAULT_TEAMDOWNLOADS:
+            print(f"{download['filename']}: {download['description']}")
         print()
 
     # Confirm reset
