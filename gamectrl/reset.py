@@ -85,7 +85,7 @@ DEFAULT_FLATPAGES = [
     },
     {
         "file_path": "../markdowns/index.md",
-        "title": "Index",
+        "title": "",
         "slug": "index",
         "category": "",  # No category (NULL)
         "ordering": 0,
