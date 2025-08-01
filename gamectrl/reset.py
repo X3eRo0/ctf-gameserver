@@ -30,7 +30,7 @@ DEFAULT_CONFIG = {
     "current_tick": 0,
     "cancel_checks": False,
     "flag_prefix": "FLAG_",
-    "registration_open": True,
+    "registration_open": False,
     "registration_confirm_text": "",
     "min_net_number": 1,
     "max_net_number": None,  # Will be set to None (NULL in database)
@@ -86,7 +86,7 @@ DEFAULT_FLATPAGES = [
     {
         "file_path": "../markdowns/index.md",
         "title": "",
-        "slug": "index",
+        "slug": "",
         "category": "",  # No category (NULL)
         "ordering": 0,
     },
