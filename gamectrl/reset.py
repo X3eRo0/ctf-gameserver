@@ -25,8 +25,8 @@ DEFAULT_CONFIG = {
     "services_public": None,  # Will be set to None (NULL in database)
     "start": None,  # Will be set to None (NULL in database)
     "end": None,  # Will be set to None (NULL in database)
-    "tick_duration": 60,
-    "valid_ticks": 5,
+    "tick_duration": 120,
+    "valid_ticks": 2,
     "current_tick": 0,
     "cancel_checks": False,
     "flag_prefix": "FLAG_",

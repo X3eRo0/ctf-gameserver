@@ -7,6 +7,28 @@ The Vulnbox image will be available as an x86-64 image in OVA format. This means
 
 A test image to check your virtualization setup (even before the Vulnbox image is released) will be available. To also check your networking setup, the VPN will be online as soon as the test image is available.
 
+# Test Vulnbox
+
+The test vulnboxes are now available to download at [vulnbox.ova](https://x3ero0.dev/uploads/vulnbox-ubuntu24.04.ova)
+
+We're created a tutorial/demo on how to setup the vulnbox at 00:08:00 mark. 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/_yGP5HxubWQ?si=fldlyWK_ljeoPD9P" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+To start a test vulnbox, 
+
+- Follow the tutorial to download and setup the VM. 
+- Create a test account on x3ero0.dev (registration for testing purposes is open. The site will be reset later on)
+- Ping `x3ero0` or `alchemy1729` and ask them to generate your VPN configs. Once they are generated, they should be available in your Team Downloads.
+- Download [cowsay](https://x3ero0.dev/uploads/cowsay.tar.gz) service and setup the service and test if everything is working as intended.
+- We are running out own test vulnbox at 10.32.1.2 and you can test your exploits and flag submissions using out test vulnbox.
+- You can also test your traffic analyser tools such as [Tulip: Network analysis tool for Attack Defence CTF](https://github.com/OpenAttackDefenseTools/tulip) and exploit shooters such as [Ataka](https://github.com/OpenAttackDefenseTools/ataka).
+
+Default credentials for the vulnbox is `vulnbox:vulnbox123`. Reach out to `x3ero0` or `alchemy1729` if there are any issues.
+
+Test Vulnbox: [vulnbox.ova](https://x3ero0.dev/uploads/vulnbox-ubuntu24.04.ova)
+
+Cowsay service: [cowsay](https://x3ero0.dev/uploads/cowsay.tar.gz)
+
 # Network
 
 A WireGuard VPN config will be released which should be used in your Vulnbox (not your host) to connect it to the Gameserver. This VPN allows your vulnbox to be connected to the gameserver and other teams. so, it is very important to run the VPN during the competition otherwise you may loose SLA points.
