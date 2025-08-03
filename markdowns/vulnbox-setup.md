@@ -108,7 +108,7 @@ A mostly unaltered Vulnbox to check your exploits against will be available with
 
 You run attacks against other teams from your infrastructure, using your own tools.
 
-Flag submission is possible using a plaintext protocol on submission.x3ero0.dev:666 from within the competition network. The protocol is specified in the CTF Gameserver documentation.
+Flag submission is possible using a plaintext protocol on submission.x3ero0.dev:6666 from within the competition network. The protocol is specified in the CTF Gameserver documentation.
 
 # Flag Format
 

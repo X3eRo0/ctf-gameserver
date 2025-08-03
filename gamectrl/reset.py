@@ -26,7 +26,7 @@ DEFAULT_CONFIG = {
     "start": None,  # Will be set to None (NULL in database)
     "end": None,  # Will be set to None (NULL in database)
     "tick_duration": 120,
-    "valid_ticks": 2,
+    "valid_ticks": 5,
     "current_tick": 0,
     "cancel_checks": False,
     "flag_prefix": "FLAG_",
