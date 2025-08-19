@@ -45,11 +45,39 @@ The Vulnbox VPN uses WireGuard with a single peer per team. This means that it's
 
 You can check the VPN connection on your personal VPN Status History page.
 
+### Setup VPN on the vulnbox
+1. Download `wg-ctf.conf` from [Team Downloads](/downloads/)
+2. scp it to the vulnbox `scp <filename> vulnbox@192.168.56.10:<path on vulnbox>`
+3. Enable a system ctl service to start the VPN on boot. This means no manual effort to start VPN everytime the vulnbox is restarted.
+   
+   - To enable VPN service: `systemctl enable wg-quick@wg-ctf`
+   - To manually start VPN: `systemctl start wg-quick@wg-ctf`
+   - To manually stop VPN: `systemctl stop wg-quick@wg-ctf`
+   - To check VPN status: `systemctl status wg-quick@wg-ctf`
+4. Your VPN is all done!!!
+
 ## Player VPN
 
 The player VPN allows individual team members to connect to the team's own Vulnbox and the rest of the competition network.
 
 It can be used in both on-site and remote setups, however, each player will have to use OpenVPN on their individual machine. Multiple connections can be made using the same player VPN config file.
+
+All players should use openvpn to connect their HOST machines to the game network, and it's as easy as installing OpenVPN on your machine and using the provided `player.ovpn` from [Team Downloads](/downloads/) and connecting using this config.
+
+### OpenVPN on Windows/Mac
+1. Download and install the client from [https://openvpn.net/client/](https://openvpn.net/client/)
+2. Download `player.ovpn` from [Team Downloads](/downloads/)
+3. Import or Upload from file and choose player.ovpn
+4. Continue until the connection is established
+5. Reach out to `x3ero0` on discord if anything goes wrong.
+
+### OpenVPN on Ubuntu/Linux
+You can also use your Network Manager to connect to the VPN or you can do the following steps.
+
+1. Install openvpn through apt or any other package manager `sudo apt install openvpn`
+2. Download `player.ovpn` from [Team Downloads](/downloads/)
+3. run `sudo openvpn --config <path to player.ovpn>` and keep it running in background.
+4. Reach out to `x3ero0` on discord if anything goes wrong.
 
 The Vulnbox network and the player network have full access to each other, even before the start of the competition. But unlike on the Vulnbox network, hosts on the player VPN can not be accessed by other teams.
 IP Ranges Overview
@@ -123,4 +151,3 @@ The Gameserver's checks for the functioning of a service have one of these resul
 - recovering: Flags from more recent ticks can be retrieved, but (still valid) flags from previous ticks are missing
 - faulty: The service is reachable, but not working correctly
 - down: The service is not reachable at all, e.g. because the port is closed or a timeout occurred
-

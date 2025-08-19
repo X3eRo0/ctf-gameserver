@@ -210,13 +210,14 @@ duplicate-cn
     server_config += f"""
 
 # Basic settings
-# Basic settings
 keepalive 10 120
 data-ciphers AES-256-GCM:AES-128-GCM
 cipher AES-256-GCM
 auth SHA256
 comp-lzo no
+compress
 push "comp-lzo no"
+push "compress"
 
 # Security
 user nobody
@@ -262,9 +263,11 @@ persist-tun
 remote-cert-tls server
 
 # Crypto
+data-ciphers AES-256-GCM:AES-128-GCM
 cipher AES-256-GCM
 auth SHA256
 comp-lzo no
+compress
 
 verb 3
 
