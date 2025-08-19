@@ -177,3 +177,52 @@ The server MUST implement OK, INV, and ERR. Other response codes are optional. T
             for flag in flags:
                 yield flag, FlagStatus.wait, f"Connection failed: {e}"
 
+
+
+## Nendo's submitter
+
+    #!/usr/bin/env python3
+    import json
+    import requests
+    from exploitfarm.models.enums import FlagStatus
+     
+    from pwn import *
+    context(encoding="ascii", arch="amd64")
+     
+    def submit(flags):
+        results = []
+        try:
+            HEADER = b"\nOne flag per line please!\n\n"
+            #server = remote("submission.x3ero0.dev", 6666, timeout=2)
+            server = remote("10.32.16.1", 6666, timeout=2)
+            server.recvuntil(HEADER, timeout=5)
+            for flag in flags:
+                server.sendline(flag.encode())
+                response = server.recvline(timeout=2)
+                flag2, status, msg = response.split(b" ", 2)
+                msg = msg.decode()
+                if b"INV" in status:
+                   results += [(flag, FlagStatus.invalid, msg)]
+                elif b'OLD' in status:
+                    results += [(flag, FlagStatus.timeout, msg)]
+                elif b'OK' in status:
+                    results += [(flag, FlagStatus.ok, msg)]
+                elif b'OWN' in status:
+                    results += [(flag, FlagStatus.invalid, msg)]
+                elif b'DUP' in status:
+                    results += [(flag, FlagStatus.timeout, msg)]
+                else:
+                    results += [(flag, FlagStatus.invalid,
+                        f"The flag is not valid: {response.decode()}")]
+                    pass
+     
+                # yield response
+                pass
+            server.close()
+        except Exception as e:
+            return [("1337", FlagStatus.wait, f"The flag server is unreachable: {e}")]
+            pass
+        return results
+        pass
+     
+

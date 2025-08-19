@@ -7,6 +7,39 @@ The Vulnbox image will be available as an x86-64 image in OVA format. This means
 
 A test image to check your virtualization setup (even before the Vulnbox image is released) will be available. To also check your networking setup, the VPN will be online as soon as the test image is available.
 
+# Final Vulnbox
+
+Final vulnbox, which will be used for the actual game is now available to download. There were a few bug fixes and QOL improvements.
+
+Changelogs:
+
+- changed from 20GB to 40GB cuz its hard to resize partition after its already being used
+- fixed sshd_config
+- added new setup-vulnbox.py that also sets up exploitfarm for you.
+
+Download available here: [Final Vulnbox](https://x3ero0.dev/uploads/vulnbox.ova)
+
+Default credentials for the vulnbox is `vulnbox:vulnbox123`. Reach out to `x3ero0` or `alchemy1729` if there are any issues.
+
+This vulnbox should also clone and setup scripts to control Exploitfarm, You just have to setup Tulip and configure Exploitfarm.
+
+**DO NOT FORGET TO SET PASSWORD AUTH ON YOUR EXPLOITFARM UI RUNNING ON PORT 5050**
+
+
+## How to setup tulip (The easy way?)
+
+I have made a fork of Tulip and added a bunch of install scripts, all you have to do is run ``python3 setup_tulip.py`` and put in your team id and team ip. Thats it.
+
+When the actual game starts, I can add all the services and their port in the configuration script and you guys can do a ``git pull`` and rerun tulip, thats it.
+
+
+    git clone https://github.com/X3eRo0/tulip
+    cd tulip
+    python3 setup_tulip.py
+    sudo ./start_capture.sh # this starts tcpdump
+    ./start_tulip.sh
+
+
 # Test Vulnbox
 
 The test vulnboxes are now available to download at [vulnbox.ova](https://x3ero0.dev/uploads/vulnbox-ubuntu24.04.ova)
@@ -21,7 +54,7 @@ To start a test vulnbox,
 - Ping `x3ero0` or `alchemy1729` and ask them to generate your VPN configs. Once they are generated, they should be available in your Team Downloads.
 - Download [cowsay](https://x3ero0.dev/uploads/cowsay.tar.gz) service and setup the service and test if everything is working as intended.
 - We are running out own test vulnbox at 10.32.1.2 and you can test your exploits and flag submissions using out test vulnbox.
-- You can also test your traffic analyser tools such as [Tulip: Network analysis tool for Attack Defence CTF](https://github.com/OpenAttackDefenseTools/tulip) and exploit shooters such as [Ataka](https://github.com/OpenAttackDefenseTools/ataka).
+- You can also test your traffic analyser tools such as [Tulip: Network analysis tool for Attack Defence CTF](https://github.com/OpenAttackDefenseTools/tulip) and exploit shooters such as [ExploitFarm](https://github.com/pwnzer0tt1/exploitfarm).
 
 Default credentials for the vulnbox is `vulnbox:vulnbox123`. Reach out to `x3ero0` or `alchemy1729` if there are any issues.
 
@@ -151,3 +184,4 @@ The Gameserver's checks for the functioning of a service have one of these resul
 - recovering: Flags from more recent ticks can be retrieved, but (still valid) flags from previous ticks are missing
 - faulty: The service is reachable, but not working correctly
 - down: The service is not reachable at all, e.g. because the port is closed or a timeout occurred
+
