@@ -52,3 +52,128 @@ The server MUST implement OK, INV, and ERR. Other response codes are optional. T
     S: FLAG{🤔🧙‍♂️👻💩🎉} DUP You already submitted this flag
     S: 🏴‍☠️ INV Bad flag format
 
+
+# Submission script
+
+    #!/usr/bin/env python3
+    """
+    Academy CTF submission script.
+    """
+    
+    from pwn import *
+    from exploitfarm.models.enums import FlagStatus
+    
+    context.log_level = "critical"
+    
+    # Response code mappings to FlagStatus
+    RESPONSE_MAPPINGS = {
+        "OK": FlagStatus.ok,
+        "DUP": FlagStatus.invalid,  # Already submitted
+        "OWN": FlagStatus.invalid,  # Own flag
+        "OLD": FlagStatus.timeout,  # Expired flag
+        "INV": FlagStatus.invalid,  # Invalid flag format
+        "ERR": FlagStatus.wait,  # Server error, can retry
+    }
+    
+    
+    def _read_welcome_banner(conn, timeout=10):
+        """Read welcome banner until double newline"""
+        banner_lines = []
+        try:
+            while True:
+                line = conn.recvline(timeout=timeout).decode("utf-8", errors="replace")
+                banner_lines.append(line.rstrip("\n"))
+    
+                # Check for double newline (end of welcome)
+                if (
+                    len(banner_lines) >= 2
+                    and banner_lines[-1] == ""
+                    and banner_lines[-2] == ""
+                ):
+                    break
+                elif line.strip() == "":
+                    # Single empty line, check if next is also empty
+                    next_line = conn.recvline(timeout=timeout).decode(
+                        "utf-8", errors="replace"
+                    )
+                    banner_lines.append(next_line.rstrip("\n"))
+                    if next_line.strip() == "":
+                        break
+        except (EOFError, Exception):
+            pass
+    
+        return banner_lines
+    
+    
+    def _parse_response(response_line):
+        """Parse a response line according to FAUST CTF protocol"""
+        parts = response_line.strip().split(None, 2)  # Split on whitespace, max 3 parts
+    
+        if len(parts) < 2:
+            return None, FlagStatus.wait, "Invalid response format"
+    
+        flag = parts[0]
+        response_code = parts[1]
+        message = parts[2] if len(parts) > 2 else ""
+    
+        # Map response code to FlagStatus
+        flag_status = RESPONSE_MAPPINGS.get(response_code, FlagStatus.wait)
+    
+        return flag, flag_status, f"{response_code}: {message}".strip(": ")
+    
+    
+    def submit(flags, host="10.32.1.1", port=6666, http_timeout=30, **kwargs):
+        """
+        Submit flags to FAUST CTF submission server
+    
+        Args:
+            flags: List of flags to submit
+            host: Submission server hostname
+            port: Submission server port
+            http_timeout: Connection timeout (renamed for compatibility with exploitfarm)
+            **kwargs: Additional arguments (ignored for compatibility)
+    
+        Yields:
+            Tuple of (flag, FlagStatus, message)
+        """
+        try:
+            # Connect to submission server
+            conn = remote(host, port, timeout=http_timeout)
+    
+            # Read welcome banner
+            conn.recvline()
+            conn.recvline()
+            conn.recvline()
+            # Submit each flag
+            for flag in flags:
+                try:
+                    # Send flag with newline
+                    conn.sendline(flag.encode("utf-8"))
+    
+                    # Read response
+                    response = conn.recvline(timeout=http_timeout).decode(
+                        "utf-8", errors="replace"
+                    )
+                    # Parse response
+                    parsed_flag, status, message = _parse_response(response)
+    
+                    # Verify flag matches (server should echo the flag)
+                    if parsed_flag and parsed_flag != flag:
+                        message = f"Flag mismatch: {message}"
+    
+                    yield flag, status, message
+    
+                except EOFError:
+                    yield flag, FlagStatus.wait, "Connection closed by server"
+                    break
+                except Exception as e:
+                    yield flag, FlagStatus.wait, f"Submission error: {e}"
+    
+            # Close connection
+            conn.close()
+    
+        except Exception as e:
+            # Connection failed, return error for all flags
+            for flag in flags:
+                yield flag, FlagStatus.wait, f"Connection failed: {e}"
+
